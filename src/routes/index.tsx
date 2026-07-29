@@ -506,7 +506,7 @@ function Index() {
 
           <div className="grid grid-cols-2 gap-2.5">
             <Readout k="Volume de ar da sala" v={Math.round(V).toLocaleString("pt-BR")} unit="m³" />
-            <Readout k="Distância fonte–ouvinte" v={distM.toFixed(1)} unit="m" />
+            <Readout k="Distância fonte ouvinte" v={distM.toFixed(1)} unit="m" />
             <Readout k="Nível sonoro no ouvinte" v={spl.toFixed(1)} unit="dB" />
             <Readout k="Reverberação (RT60)" v={rt.toFixed(2)} unit="s" />
           </div>

@@ -239,7 +239,7 @@ function Index() {
         <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-semibold leading-[1.05] tracking-tight text-parchment md:text-6xl">
           Trabalho de <em className="italic text-brass-bright">Matemática</em>
           <span className="mt-2 block font-display text-lg font-normal not-italic tracking-[0.18em] text-parchment-dim md:text-xl">
-            — UM ESTUDO SOBRE REFLEXÃO, VOLUME E PROPAGAÇÃO —
+            UM ESTUDO SOBRE REFLEXÃO, VOLUME E PROPAGAÇÃO
           </span>
         </h1>
 

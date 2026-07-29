@@ -6,13 +6,13 @@ import salaHall from "@/assets/sala-hall.webp.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sala São Paulo — Trabalho de Matemática · Simulador Acústico" },
+      { title: "Sala São Paulo · Trabalho de Matemática · Simulador Acústico" },
       {
         name: "description",
         content:
           "Simulador interativo do forro móvel da Sala São Paulo. Ajuste altura do teto, potência da fonte e posição do ouvinte, e escute em tempo real como reflexão, volume e reverberação moldam o som.",
       },
-      { property: "og:title", content: "Sala São Paulo — Trabalho de Matemática" },
+      { property: "og:title", content: "Sala São Paulo · Trabalho de Matemática" },
       {
         property: "og:description",
         content:
@@ -239,14 +239,14 @@ function Index() {
         <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-semibold leading-[1.05] tracking-tight text-parchment md:text-6xl">
           Trabalho de <em className="italic text-brass-bright">Matemática</em>
           <span className="mt-2 block font-display text-lg font-normal not-italic tracking-[0.18em] text-parchment-dim md:text-xl">
-            — UM ESTUDO SOBRE REFLEXÃO, VOLUME E PROPAGAÇÃO —
+            UM ESTUDO SOBRE REFLEXÃO, VOLUME E PROPAGAÇÃO
           </span>
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-parchment-dim">
           Simulador do forro móvel da Sala São Paulo. Ajuste a altura do teto e
-          a potência da fonte sonora, arraste o ouvinte pela plateia, e observe
-          — e escute — como a geometria da sala molda cada nota.
+          a potência da fonte sonora, arraste o ouvinte pela plateia, observe e
+          escute como a geometria da sala molda cada nota.
         </p>
 
         <BrassRule className="mt-8" />
@@ -260,11 +260,6 @@ function Index() {
           className="h-64 w-full object-cover md:h-[380px]"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent" />
-        <figcaption className="absolute bottom-4 left-6 right-6 flex flex-wrap items-end justify-between gap-2 font-mono text-[10.5px] uppercase tracking-[0.22em] text-parchment-dim">
-          <span>Grande sala · 15 painéis suspensos · 7,5 t cada</span>
-          <span className="text-brass">São Paulo · Brasil</span>
-        </figcaption>
       </figure>
 
       {/* ---------- Movement I: the score ---------- */}
@@ -273,10 +268,7 @@ function Index() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         {/* Diagram panel */}
         <Panel className="p-5 md:p-6">
-          <PanelHeader
-            title="Corte transversal da sala"
-            meta="15 painéis · 7,5 t cada"
-          />
+          <PanelHeader title="Corte transversal da sala" />
           <svg
             ref={svgRef}
             viewBox="0 0 800 460"
@@ -514,7 +506,7 @@ function Index() {
 
           <div className="grid grid-cols-2 gap-2.5">
             <Readout k="Volume de ar da sala" v={Math.round(V).toLocaleString("pt-BR")} unit="m³" />
-            <Readout k="Distância fonte–ouvinte" v={distM.toFixed(1)} unit="m" />
+            <Readout k="Distância fonte ouvinte" v={distM.toFixed(1)} unit="m" />
             <Readout k="Nível sonoro no ouvinte" v={spl.toFixed(1)} unit="dB" />
             <Readout k="Reverberação (RT60)" v={rt.toFixed(2)} unit="s" />
           </div>
@@ -534,9 +526,6 @@ function Index() {
               <span className="mr-2 text-brass-bright">{toneOn ? "■" : "▶"}</span>
               {toneOn ? "Parar tom contínuo" : "Tocar tom contínuo (Ré³)"}
             </button>
-            <p className="text-[11px] text-parchment-dim">
-              🔊 Clique em um botão para ativar o áudio no navegador.
-            </p>
           </div>
         </Panel>
       </div>
@@ -654,16 +643,3 @@ function Readout({ k, v, unit }: { k: string; v: string; unit: string }) {
   );
 }
 
-function NoteCard({ heading, body }: { heading: string; body: string }) {
-  return (
-    <Panel className="p-6">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="text-brass" aria-hidden>♪</span>
-        <h3 className="font-display text-xl italic text-brass-bright">
-          {heading}
-        </h3>
-      </div>
-      <p className="text-sm leading-relaxed text-parchment-dim">{body}</p>
-    </Panel>
-  );
-}

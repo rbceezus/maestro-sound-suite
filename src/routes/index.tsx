@@ -1,18 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import salaLogo from "@/assets/sala-logo.png";
-import salaHall from "@/assets/sala-hall.jpg";
+import salaHall from "@/assets/sala-hall.webp.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sala São Paulo — O Teto que Ouve · Simulador Acústico" },
+      { title: "Sala São Paulo — Trabalho de Matemática · Simulador Acústico" },
       {
         name: "description",
         content:
           "Simulador interativo do forro móvel da Sala São Paulo. Ajuste altura do teto, potência da fonte e posição do ouvinte, e escute em tempo real como reflexão, volume e reverberação moldam o som.",
       },
-      { property: "og:title", content: "Sala São Paulo — O Teto que Ouve" },
+      { property: "og:title", content: "Sala São Paulo — Trabalho de Matemática" },
       {
         property: "og:description",
         content:
@@ -237,7 +237,7 @@ function Index() {
         </div>
 
         <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-semibold leading-[1.05] tracking-tight text-parchment md:text-6xl">
-          O <em className="italic text-brass-bright">teto que ouve</em>
+          Trabalho de <em className="italic text-brass-bright">Matemática</em>
           <span className="mt-2 block font-display text-lg font-normal not-italic tracking-[0.18em] text-parchment-dim md:text-xl">
             — UM ESTUDO SOBRE REFLEXÃO, VOLUME E PROPAGAÇÃO —
           </span>
@@ -539,24 +539,6 @@ function Index() {
             </p>
           </div>
         </Panel>
-      </div>
-
-      {/* ---------- Movement II: the physics ---------- */}
-      <SectionLabel roman="II" title="Notas de rodapé — a física por trás" />
-
-      <div className="mt-6 grid gap-5 md:grid-cols-3">
-        <NoteCard
-          heading="Reflexão"
-          body="O forro móvel age como um espelho sonoro. Quanto mais baixo, mais cedo o som refletido alcança o ouvinte — reforçando clareza e ataque."
-        />
-        <NoteCard
-          heading="Volume"
-          body="A intensidade cai 6 dB a cada duplicação da distância. Aproximar o ouvinte da fonte é ganhar presença sem tocar mais forte."
-        />
-        <NoteCard
-          heading="Reverberação"
-          body="Um teto alto amplia o volume de ar e prolonga a cauda sonora. Corais e órgão pedem RT60 longo; câmara pede algo mais seco."
-        />
       </div>
 
       <footer className="mt-16 border-t border-walnut-dark/60 pt-6 text-center font-mono text-[10.5px] uppercase tracking-[0.22em] text-parchment-dim">

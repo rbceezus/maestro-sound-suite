@@ -643,16 +643,3 @@ function Readout({ k, v, unit }: { k: string; v: string; unit: string }) {
   );
 }
 
-function NoteCard({ heading, body }: { heading: string; body: string }) {
-  return (
-    <Panel className="p-6">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="text-brass" aria-hidden>♪</span>
-        <h3 className="font-display text-xl italic text-brass-bright">
-          {heading}
-        </h3>
-      </div>
-      <p className="text-sm leading-relaxed text-parchment-dim">{body}</p>
-    </Panel>
-  );
-}

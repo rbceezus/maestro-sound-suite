@@ -268,10 +268,7 @@ function Index() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         {/* Diagram panel */}
         <Panel className="p-5 md:p-6">
-          <PanelHeader
-            title="Corte transversal da sala"
-            meta="15 painéis · 7,5 t cada"
-          />
+          <PanelHeader title="Corte transversal da sala" />
           <svg
             ref={svgRef}
             viewBox="0 0 800 460"

@@ -260,11 +260,6 @@ function Index() {
           className="h-64 w-full object-cover md:h-[380px]"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent" />
-        <figcaption className="absolute bottom-4 left-6 right-6 flex flex-wrap items-end justify-between gap-2 font-mono text-[10.5px] uppercase tracking-[0.22em] text-parchment-dim">
-          <span>Grande sala · 15 painéis suspensos · 7,5 t cada</span>
-          <span className="text-brass">São Paulo · Brasil</span>
-        </figcaption>
       </figure>
 
       {/* ---------- Movement I: the score ---------- */}

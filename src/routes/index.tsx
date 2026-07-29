@@ -245,8 +245,8 @@ function Index() {
 
         <p className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-parchment-dim">
           Simulador do forro móvel da Sala São Paulo. Ajuste a altura do teto e
-          a potência da fonte sonora, arraste o ouvinte pela plateia, e observe
-          — e escute — como a geometria da sala molda cada nota.
+          a potência da fonte sonora, arraste o ouvinte pela plateia, observe e
+          escute como a geometria da sala molda cada nota.
         </p>
 
         <BrassRule className="mt-8" />

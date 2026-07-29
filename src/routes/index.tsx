@@ -6,13 +6,13 @@ import salaHall from "@/assets/sala-hall.webp.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sala São Paulo — Trabalho de Matemática · Simulador Acústico" },
+      { title: "Sala São Paulo · Trabalho de Matemática · Simulador Acústico" },
       {
         name: "description",
         content:
           "Simulador interativo do forro móvel da Sala São Paulo. Ajuste altura do teto, potência da fonte e posição do ouvinte, e escute em tempo real como reflexão, volume e reverberação moldam o som.",
       },
-      { property: "og:title", content: "Sala São Paulo — Trabalho de Matemática" },
+      { property: "og:title", content: "Sala São Paulo · Trabalho de Matemática" },
       {
         property: "og:description",
         content:

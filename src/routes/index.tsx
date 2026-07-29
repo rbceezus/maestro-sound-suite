@@ -526,9 +526,6 @@ function Index() {
               <span className="mr-2 text-brass-bright">{toneOn ? "■" : "▶"}</span>
               {toneOn ? "Parar tom contínuo" : "Tocar tom contínuo (Ré³)"}
             </button>
-            <p className="text-[11px] text-parchment-dim">
-              🔊 Clique em um botão para ativar o áudio no navegador.
-            </p>
           </div>
         </Panel>
       </div>

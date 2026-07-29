@@ -255,7 +255,7 @@ function Index() {
       {/* ---------- Hero hall photograph ---------- */}
       <figure className="relative mt-10 overflow-hidden rounded-sm border border-walnut-dark shadow-[var(--shadow-panel)]">
         <img
-          src={salaHall}
+          src={salaHall.url}
           alt="Interior da Sala São Paulo iluminada em tons âmbar"
           className="h-64 w-full object-cover md:h-[380px]"
           loading="lazy"

@@ -263,7 +263,6 @@ function Index() {
       </figure>
 
       {/* ---------- Movement I: the score ---------- */}
-      <SectionLabel roman="I" title="Corte transversal &amp; console" />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         {/* Diagram panel */}
@@ -530,9 +529,6 @@ function Index() {
         </Panel>
       </div>
 
-      <footer className="mt-16 border-t border-walnut-dark/60 pt-6 text-center font-mono text-[10.5px] uppercase tracking-[0.22em] text-parchment-dim">
-        Simulação educacional · Modelo geométrico simplificado
-      </footer>
     </main>
   );
 }

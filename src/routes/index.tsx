@@ -263,7 +263,6 @@ function Index() {
       </figure>
 
       {/* ---------- Movement I: the score ---------- */}
-      <SectionLabel roman="I" title="Corte transversal &amp; console" />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         {/* Diagram panel */}

@@ -263,7 +263,7 @@ function Scene({
       {[-HALL_W / 2, HALL_W / 2].map((z) => (
         <mesh key={z} position={[HALL_LEN / 2, 11, z]}>
           <boxGeometry args={[HALL_LEN, 22, 0.6]} />
-          <meshStandardMaterial color="#c2a377" roughness={0.9} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#c2a377" roughness={0.9} side={THREE.BackSide} />
         </mesh>
       ))}
       {/* stage-end wall with arches */}
@@ -280,7 +280,7 @@ function Scene({
       {/* truss roof */}
       <mesh position={[HALL_LEN / 2, 26.5, 0]}>
         <boxGeometry args={[HALL_LEN, 0.6, HALL_W]} />
-        <meshStandardMaterial color="#1c130c" roughness={1} />
+        <meshStandardMaterial color="#1c130c" roughness={1} side={THREE.BackSide} />
       </mesh>
 
       <Columns />
@@ -347,7 +347,7 @@ export default function Hall3D(props: {
     <Canvas
       shadows
       dpr={[1, 1.75]}
-      camera={{ position: [52, 14, 26], fov: 45 }}
+      camera={{ position: [46, 16, 20], fov: 48 }}
       className="h-full w-full"
     >
       <Suspense fallback={null}>

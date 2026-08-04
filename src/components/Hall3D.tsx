@@ -326,7 +326,7 @@ function Scene({
       </group>
 
       <OrbitControls
-        target={[6, 7, 0]}
+        target={[18, 4, 0]}
         enablePan
         minDistance={12}
         maxDistance={90}
@@ -347,7 +347,7 @@ export default function Hall3D(props: {
     <Canvas
       shadows
       dpr={[1, 1.75]}
-      camera={{ position: [36, 8, 7], fov: 55 }}
+      camera={{ position: [64, 30, 40], fov: 42 }}
       className="h-full w-full"
     >
       <Suspense fallback={null}>

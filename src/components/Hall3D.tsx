@@ -87,6 +87,85 @@ function Seats() {
   );
 }
 
+function Balconies() {
+  const tiers = [
+    { y: 6.5, depth: 3.2, rows: 3, cols: 13 },
+    { y: 11.2, depth: 2.8, rows: 2, cols: 13 },
+  ];
+  const startX = 7;
+  const endX = 37;
+  const span = endX - startX;
+  const midX = (startX + endX) / 2;
+
+  return (
+    <>
+      {tiers.map((tier, ti) =>
+        [-1, 1].map((side) => {
+          const wallZ = side * (HALL_W / 2);
+          const innerZ = side * (HALL_W / 2 - tier.depth);
+          const centerZ = (wallZ + innerZ) / 2;
+
+          const seats: [number, number, number][] = [];
+          for (let r = 0; r < tier.rows; r++) {
+            for (let c = 0; c < tier.cols; c++) {
+              const x = startX + (c / (tier.cols - 1)) * span;
+              const y = tier.y + 0.3 + r * 0.18;
+              const z = innerZ + side * (0.5 + r * 0.7);
+              seats.push([x, y, z]);
+            }
+          }
+
+          return (
+            <group key={`${ti}-${side}`}>
+              {/* Floor slab */}
+              <mesh position={[midX, tier.y, centerZ]} castShadow receiveShadow>
+                <boxGeometry args={[span + 1, 0.35, tier.depth]} />
+                <meshStandardMaterial color={WOOD_DARK} roughness={0.95} />
+              </mesh>
+
+              {/* Decorative front fascia facing centre */}
+              <mesh position={[midX, tier.y + 0.6, innerZ]} castShadow>
+                <boxGeometry args={[span + 1, 1.3, 0.22]} />
+                <meshStandardMaterial color={STONE} roughness={0.75} />
+              </mesh>
+
+              {/* Brass railing bars */}
+              <mesh position={[midX, tier.y + 1.35, innerZ]}>
+                <boxGeometry args={[span + 1, 0.06, 0.1]} />
+                <meshStandardMaterial color="#b8902f" roughness={0.3} metalness={0.6} />
+              </mesh>
+              <mesh position={[midX, tier.y + 0.95, innerZ]}>
+                <boxGeometry args={[span + 1, 0.04, 0.08]} />
+                <meshStandardMaterial color="#b8902f" roughness={0.3} metalness={0.6} />
+              </mesh>
+
+              {/* Under-balcony soffit */}
+              <mesh position={[midX, tier.y - 0.2, centerZ]} receiveShadow>
+                <boxGeometry args={[span + 1, 0.08, tier.depth]} />
+                <meshStandardMaterial color={WOOD_DARK} roughness={1} side={THREE.BackSide} />
+              </mesh>
+
+              {/* Seats facing the stage (backrest at +x) */}
+              {seats.map((p, i) => (
+                <group key={i} position={p}>
+                  <mesh>
+                    <boxGeometry args={[0.38, 0.22, 0.5]} />
+                    <meshStandardMaterial color={SEAT} roughness={0.9} />
+                  </mesh>
+                  <mesh position={[0.2, 0.32, 0]}>
+                    <boxGeometry args={[0.08, 0.6, 0.5]} />
+                    <meshStandardMaterial color={SEAT} roughness={0.9} />
+                  </mesh>
+                </group>
+              ))}
+            </group>
+          );
+        }),
+      )}
+    </>
+  );
+}
+
 function Orchestra() {
   const chairs = useMemo(() => {
     const out: [number, number, number][] = [];
@@ -286,6 +365,7 @@ function Scene({
       <Columns />
       <Orchestra />
       <Seats />
+      <Balconies />
       <MovableCeiling height={height} />
       <Rays height={height} listener={listener} />
 
@@ -326,10 +406,10 @@ function Scene({
       </group>
 
       <OrbitControls
-        target={[4, 5, 0]}
+        target={[6, 5, 0]}
         enablePan
         minDistance={12}
-        maxDistance={90}
+        maxDistance={100}
         maxPolarAngle={Math.PI / 1.9}
         makeDefault
       />
@@ -347,7 +427,7 @@ export default function Hall3D(props: {
     <Canvas
       shadows
       dpr={[1, 1.75]}
-      camera={{ position: [37, 4.6, 0], fov: 60 }}
+      camera={{ position: [36, 6, 8], fov: 55 }}
       className="h-full w-full"
     >
       <Suspense fallback={null}>

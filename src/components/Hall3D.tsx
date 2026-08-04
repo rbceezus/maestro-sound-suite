@@ -326,11 +326,11 @@ function Scene({
       </group>
 
       <OrbitControls
-        target={[4, 8, 0]}
+        target={[4, 5, 0]}
         enablePan
         minDistance={12}
         maxDistance={90}
-        maxPolarAngle={Math.PI / 2.05}
+        maxPolarAngle={Math.PI / 1.9}
         makeDefault
       />
     </>
@@ -347,7 +347,7 @@ export default function Hall3D(props: {
     <Canvas
       shadows
       dpr={[1, 1.75]}
-      camera={{ position: [37, 7, 0], fov: 60 }}
+      camera={{ position: [37, 4.6, 0], fov: 60 }}
       className="h-full w-full"
     >
       <Suspense fallback={null}>

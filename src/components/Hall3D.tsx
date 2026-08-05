@@ -435,7 +435,7 @@ export default function Hall3D(props: {
     <Canvas
       shadows
       dpr={[1, 1.75]}
-      camera={{ position: [36, 6, 8], fov: 55 }}
+      camera={{ position: [30, 6.5, 5], fov: 62 }}
       className="h-full w-full"
     >
       <Suspense fallback={null}>

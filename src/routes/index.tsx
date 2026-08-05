@@ -59,6 +59,7 @@ function Index() {
   const [toneOn, setToneOn] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [consoleOpen, setConsoleOpen] = useState(true);
+  const [playing, setPlaying] = useState<"jazz" | "classical" | null>(null);
   const isMobile = useIsMobile();
 
   useEffect(() => setMounted(true), []);
@@ -67,6 +68,8 @@ function Index() {
   const bufferRef = useRef<AudioBuffer | null>(null);
   const oscRef = useRef<OscillatorNode | null>(null);
   const oscGainRef = useRef<GainNode | null>(null);
+  const musicStopRef = useRef<(() => void) | null>(null);
+
 
   const ly = 1.6 + (lx - 9) * 0.09;
   const dx = lx - SOURCE_3D.x;

@@ -3,11 +3,14 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
+  Music2,
+  Piano,
   Play,
   Square,
   SlidersHorizontal,
   X,
 } from "lucide-react";
+
 import salaLogo from "@/assets/sala-logo.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 

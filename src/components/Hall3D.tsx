@@ -407,18 +407,19 @@ function Scene({
       </group>
 
       <OrbitControls
-        target={[8, 6, 0]}
+        target={[14, 8, 0]}
         enablePan={false}
-        minDistance={20}
-        maxDistance={40}
-        minPolarAngle={Math.PI / 3.4}
-        maxPolarAngle={Math.PI / 2.15}
-        minAzimuthAngle={-Math.PI / 3}
-        maxAzimuthAngle={Math.PI / 3}
+        minDistance={10}
+        maxDistance={22}
+        minPolarAngle={Math.PI / 5}
+        maxPolarAngle={Math.PI / 1.95}
+        minAzimuthAngle={-Math.PI / 2.2}
+        maxAzimuthAngle={Math.PI / 2.2}
         enableDamping
         dampingFactor={0.08}
         makeDefault
       />
+
 
     </>
   );
@@ -434,7 +435,7 @@ export default function Hall3D(props: {
     <Canvas
       shadows
       dpr={[1, 1.75]}
-      camera={{ position: [36, 6, 8], fov: 55 }}
+      camera={{ position: [30, 6.5, 5], fov: 62 }}
       className="h-full w-full"
     >
       <Suspense fallback={null}>

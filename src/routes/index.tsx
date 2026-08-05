@@ -69,6 +69,13 @@ function Index() {
   const oscRef = useRef<OscillatorNode | null>(null);
   const oscGainRef = useRef<GainNode | null>(null);
   const musicStopRef = useRef<(() => void) | null>(null);
+  const busRef = useRef<{
+    master: GainNode;
+    dry: GainNode;
+    wet: GainNode;
+    conv: ConvolverNode;
+    rt: number;
+  } | null>(null);
 
 
   const ly = 1.6 + (lx - 9) * 0.09;
@@ -102,6 +109,62 @@ function Index() {
 
   const gainFromSPL = (s: number) => Math.max(0.02, Math.min(0.25, (s - 40) / 260));
 
+  const makeImpulse = (ctx: AudioContext, seconds: number) => {
+    const rate = ctx.sampleRate;
+    const length = Math.max(1, Math.floor(rate * seconds));
+    const impulse = ctx.createBuffer(2, length, rate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = impulse.getChannelData(ch);
+      for (let i = 0; i < length; i++) {
+        const t = i / rate;
+        // small pre-delay grows with the ceiling height: bigger room, later reflections
+        const decay = Math.exp(-i / (rate * (seconds / 6.91)));
+        data[i] = (Math.random() * 2 - 1) * decay * (t < 0.008 ? t / 0.008 : 1);
+      }
+    }
+    return impulse;
+  };
+
+  // Shared reverb bus: every sound (clap, tone, music) goes through it,
+  // so changing the ceiling height is audible immediately.
+  const ensureBus = () => {
+    const ctx = ensureAudio();
+    if (!busRef.current) {
+      const master = ctx.createGain();
+      master.gain.value = 1;
+      master.connect(ctx.destination);
+
+      const dry = ctx.createGain();
+      const wet = ctx.createGain();
+      const conv = ctx.createConvolver();
+      conv.buffer = makeImpulse(ctx, Math.max(0.3, rt));
+      dry.gain.value = 1;
+      wet.gain.value = 0.25 + rt * 0.35;
+      dry.connect(master);
+      conv.connect(wet);
+      wet.connect(master);
+      busRef.current = { master, dry, wet, conv, rt };
+    }
+    return busRef.current;
+  };
+
+  // Live update of the reverb whenever the ceiling moves
+  useEffect(() => {
+    const bus = busRef.current;
+    const ctx = audioCtxRef.current;
+    if (!bus || !ctx) return;
+    if (Math.abs(bus.rt - rt) < 0.03) return;
+    bus.rt = rt;
+    bus.conv.buffer = makeImpulse(ctx, Math.max(0.3, rt));
+    bus.wet.gain.setTargetAtTime(0.25 + rt * 0.35, ctx.currentTime, 0.08);
+    bus.dry.gain.setTargetAtTime(
+      Math.max(0.45, 1.05 - rt * 0.2),
+      ctx.currentTime,
+      0.08,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rt]);
+
   const loadBuffer = async () => {
     if (bufferRef.current) return bufferRef.current;
     const ctx = ensureAudio();
@@ -113,44 +176,33 @@ function Index() {
 
   const playClap = async () => {
     const ctx = ensureAudio();
+    const bus = ensureBus();
     const buffer = await loadBuffer();
     if (!buffer) return;
 
-    const master = ctx.createGain();
-    master.gain.value = gainFromSPL(spl);
-    master.connect(ctx.destination);
+    const g = ctx.createGain();
+    g.gain.value = gainFromSPL(spl) * 4;
+    g.connect(bus.dry);
+    g.connect(bus.conv);
 
     const source = ctx.createBufferSource();
     source.buffer = buffer;
-
-    const rate = ctx.sampleRate;
-    const length = Math.floor(rate * rt);
-    const impulse = ctx.createBuffer(2, length, rate);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = impulse.getChannelData(ch);
-      for (let i = 0; i < length; i++) {
-        const decay = Math.exp(-i / (rate * (rt / 6.91)));
-        data[i] = (Math.random() * 2 - 1) * decay;
-      }
-    }
-    const convolver = ctx.createConvolver();
-    convolver.buffer = impulse;
-
-    source.connect(master);
-    source.connect(convolver);
-    convolver.connect(master);
+    source.connect(g);
     source.start(ctx.currentTime);
   };
 
   const toggleTone = () => {
     const ctx = ensureAudio();
+    const bus = ensureBus();
     if (!toneOn) {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = 293.7;
       g.gain.value = gainFromSPL(spl);
-      osc.connect(g).connect(ctx.destination);
+      osc.connect(g);
+      g.connect(bus.dry);
+      g.connect(bus.conv);
       osc.start();
       oscRef.current = osc;
       oscGainRef.current = g;
@@ -174,20 +226,6 @@ function Index() {
   }, [spl, toneOn]);
 
   // ---------- Demo music (synthesised, ~12 s) ----------
-  const makeImpulse = (ctx: AudioContext, seconds: number) => {
-    const rate = ctx.sampleRate;
-    const length = Math.max(1, Math.floor(rate * seconds));
-    const impulse = ctx.createBuffer(2, length, rate);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = impulse.getChannelData(ch);
-      for (let i = 0; i < length; i++) {
-        const decay = Math.exp(-i / (rate * (seconds / 6.91)));
-        data[i] = (Math.random() * 2 - 1) * decay;
-      }
-    }
-    return impulse;
-  };
-
   const stopMusic = () => {
     musicStopRef.current?.();
     musicStopRef.current = null;
@@ -197,67 +235,108 @@ function Index() {
   const playPiece = (kind: "jazz" | "classical") => {
     if (playing) stopMusic();
     const ctx = ensureAudio();
+    const bus = ensureBus();
     const t0 = ctx.currentTime + 0.1;
     const DUR = 12;
 
-    const master = ctx.createGain();
-    master.gain.value = gainFromSPL(spl) * 1.6;
-    master.connect(ctx.destination);
+    const out = ctx.createGain();
+    out.gain.value = gainFromSPL(spl) * 2.2;
+    out.connect(bus.dry);
+    out.connect(bus.conv);
 
-    const dry = ctx.createGain();
-    const wet = ctx.createGain();
-    const conv = ctx.createConvolver();
-    conv.buffer = makeImpulse(ctx, Math.max(0.35, rt));
-    // Jazz sounds best dry; classical/piano lives on the tail
-    dry.gain.value = kind === "jazz" ? 0.95 : 0.6;
-    wet.gain.value = kind === "jazz" ? 0.25 : 0.95;
-    dry.connect(master);
-    conv.connect(wet).connect(master);
+    const nodes: AudioScheduledSourceNode[] = [];
 
+    // piano-ish plucked note with a fast attack and natural decay
     const note = (
       freq: number,
       at: number,
       dur: number,
       gain: number,
-      type: OscillatorType,
+      type: OscillatorType = "triangle",
+      cutoff = 3200,
     ) => {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = cutoff;
       osc.type = type;
       osc.frequency.value = freq;
       g.gain.setValueAtTime(0.0001, t0 + at);
-      g.gain.exponentialRampToValueAtTime(gain, t0 + at + 0.015);
+      g.gain.exponentialRampToValueAtTime(gain, t0 + at + 0.012);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
-      osc.connect(g);
-      g.connect(dry);
-      g.connect(conv);
+      osc.connect(lp);
+      lp.connect(g);
+      g.connect(out);
       osc.start(t0 + at);
       osc.stop(t0 + at + dur + 0.05);
       nodes.push(osc);
     };
 
-    const nodes: OscillatorNode[] = [];
+    // brushed cymbal / snare using filtered noise
+    const noiseHit = (at: number, dur: number, gain: number, freq: number) => {
+      const rate = ctx.sampleRate;
+      const len = Math.max(1, Math.floor(rate * dur));
+      const buf = ctx.createBuffer(1, len, rate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.35));
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = freq;
+      bp.Q.value = 0.9;
+      const g = ctx.createGain();
+      g.gain.value = gain;
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(out);
+      src.start(t0 + at);
+      nodes.push(src);
+    };
+
     const f = (semi: number) => 440 * Math.pow(2, semi / 12);
 
     if (kind === "jazz") {
-      // small-group swing: walking bass + off-beat comping (fast, dry, articulate)
-      const bassLine = [-29, -25, -22, -20, -27, -24, -22, -17];
-      const beat = 0.375;
-      for (let bar = 0; bar < 8; bar++) {
+      // Small-group swing blues in F: walking bass, swung ride, off-beat comping
+      const beat = 0.46; // ~130 bpm
+      const swing = beat * 0.63;
+      const bars = Math.floor(DUR / (beat * 4));
+      // ii-V-I style walking line (F blues degrees)
+      const walk = [
+        [-31, -28, -26, -24],
+        [-29, -26, -24, -22],
+        [-31, -27, -24, -20],
+        [-26, -24, -22, -19],
+      ];
+      const voicings = [
+        [-13, -8, -4, -1], // F7
+        [-11, -6, -2, 1], // Bb7
+        [-8, -4, -1, 3], // C7
+        [-13, -9, -4, 0],
+      ];
+      for (let bar = 0; bar < bars; bar++) {
+        const line = walk[bar % walk.length];
+        const voi = voicings[bar % voicings.length];
         for (let i = 0; i < 4; i++) {
-          const step = bassLine[(bar * 4 + i) % bassLine.length];
-          note(f(step), (bar * 4 + i) * beat, beat * 0.85, 0.5, "triangle");
+          const at = (bar * 4 + i) * beat;
+          // upright bass: soft, dark
+          note(f(line[i]), at, beat * 0.9, 0.55, "triangle", 700);
+          // swung ride pattern: beat + swung eighth
+          noiseHit(at, 0.18, 0.05, 7000);
+          noiseHit(at + swing, 0.14, 0.032, 7600);
+          // brushed snare on 2 and 4
+          if (i % 2 === 1) noiseHit(at, 0.22, 0.05, 1800);
         }
-        // comping chord stabs on 2 and 4
+        // piano comping stabs just after beats 2 and 4 (charleston feel)
         [1, 3].forEach((i) => {
-          [-5, -1, 2, 6].forEach((s, k) =>
-            note(f(s + (bar % 2 ? 2 : 0)), (bar * 4 + i) * beat + 0.06, 0.22, 0.16 - k * 0.02, "sawtooth"),
+          const at = (bar * 4 + i) * beat + swing * 0.35;
+          voi.forEach((s, k) =>
+            note(f(s), at, 0.5, 0.14 - k * 0.015, "triangle", 2200),
           );
         });
-        // ride-like tick
-        for (let i = 0; i < 4; i++) {
-          note(3200 + (i % 2) * 400, (bar * 4 + i) * beat, 0.06, 0.03, "square");
-        }
       }
     } else {
       // solo piano / strings: slow sustained arpeggios that bloom in the reverb
@@ -269,8 +348,8 @@ function Index() {
       ];
       chords.forEach((chord, ci) => {
         chord.forEach((s, i) => {
-          note(f(s - 12), ci * 3 + i * 0.28, 2.6, 0.24, "sine");
-          note(f(s), ci * 3 + i * 0.28, 2.6, 0.18, "triangle");
+          note(f(s - 12), ci * 3 + i * 0.28, 2.8, 0.24, "sine", 2600);
+          note(f(s), ci * 3 + i * 0.28, 2.8, 0.18, "triangle", 2600);
         });
       });
     }
@@ -290,9 +369,10 @@ function Index() {
           /* already stopped */
         }
       });
-      master.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+      out.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
     };
   };
+
 
   const controlsContent = (
     <>

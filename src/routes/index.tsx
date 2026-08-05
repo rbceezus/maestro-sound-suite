@@ -3,11 +3,14 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
+  Music2,
+  Piano,
   Play,
   Square,
   SlidersHorizontal,
   X,
 } from "lucide-react";
+
 import salaLogo from "@/assets/sala-logo.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -56,6 +59,7 @@ function Index() {
   const [toneOn, setToneOn] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [consoleOpen, setConsoleOpen] = useState(true);
+  const [playing, setPlaying] = useState<"jazz" | "classical" | null>(null);
   const isMobile = useIsMobile();
 
   useEffect(() => setMounted(true), []);
@@ -64,6 +68,8 @@ function Index() {
   const bufferRef = useRef<AudioBuffer | null>(null);
   const oscRef = useRef<OscillatorNode | null>(null);
   const oscGainRef = useRef<GainNode | null>(null);
+  const musicStopRef = useRef<(() => void) | null>(null);
+
 
   const ly = 1.6 + (lx - 9) * 0.09;
   const dx = lx - SOURCE_3D.x;
@@ -167,13 +173,134 @@ function Index() {
     }
   }, [spl, toneOn]);
 
+  // ---------- Demo music (synthesised, ~12 s) ----------
+  const makeImpulse = (ctx: AudioContext, seconds: number) => {
+    const rate = ctx.sampleRate;
+    const length = Math.max(1, Math.floor(rate * seconds));
+    const impulse = ctx.createBuffer(2, length, rate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = impulse.getChannelData(ch);
+      for (let i = 0; i < length; i++) {
+        const decay = Math.exp(-i / (rate * (seconds / 6.91)));
+        data[i] = (Math.random() * 2 - 1) * decay;
+      }
+    }
+    return impulse;
+  };
+
+  const stopMusic = () => {
+    musicStopRef.current?.();
+    musicStopRef.current = null;
+    setPlaying(null);
+  };
+
+  const playPiece = (kind: "jazz" | "classical") => {
+    if (playing) stopMusic();
+    const ctx = ensureAudio();
+    const t0 = ctx.currentTime + 0.1;
+    const DUR = 12;
+
+    const master = ctx.createGain();
+    master.gain.value = gainFromSPL(spl) * 1.6;
+    master.connect(ctx.destination);
+
+    const dry = ctx.createGain();
+    const wet = ctx.createGain();
+    const conv = ctx.createConvolver();
+    conv.buffer = makeImpulse(ctx, Math.max(0.35, rt));
+    // Jazz sounds best dry; classical/piano lives on the tail
+    dry.gain.value = kind === "jazz" ? 0.95 : 0.6;
+    wet.gain.value = kind === "jazz" ? 0.25 : 0.95;
+    dry.connect(master);
+    conv.connect(wet).connect(master);
+
+    const note = (
+      freq: number,
+      at: number,
+      dur: number,
+      gain: number,
+      type: OscillatorType,
+    ) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(gain, t0 + at + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
+      osc.connect(g);
+      g.connect(dry);
+      g.connect(conv);
+      osc.start(t0 + at);
+      osc.stop(t0 + at + dur + 0.05);
+      nodes.push(osc);
+    };
+
+    const nodes: OscillatorNode[] = [];
+    const f = (semi: number) => 440 * Math.pow(2, semi / 12);
+
+    if (kind === "jazz") {
+      // small-group swing: walking bass + off-beat comping (fast, dry, articulate)
+      const bassLine = [-29, -25, -22, -20, -27, -24, -22, -17];
+      const beat = 0.375;
+      for (let bar = 0; bar < 8; bar++) {
+        for (let i = 0; i < 4; i++) {
+          const step = bassLine[(bar * 4 + i) % bassLine.length];
+          note(f(step), (bar * 4 + i) * beat, beat * 0.85, 0.5, "triangle");
+        }
+        // comping chord stabs on 2 and 4
+        [1, 3].forEach((i) => {
+          [-5, -1, 2, 6].forEach((s, k) =>
+            note(f(s + (bar % 2 ? 2 : 0)), (bar * 4 + i) * beat + 0.06, 0.22, 0.16 - k * 0.02, "sawtooth"),
+          );
+        });
+        // ride-like tick
+        for (let i = 0; i < 4; i++) {
+          note(3200 + (i % 2) * 400, (bar * 4 + i) * beat, 0.06, 0.03, "square");
+        }
+      }
+    } else {
+      // solo piano / strings: slow sustained arpeggios that bloom in the reverb
+      const chords = [
+        [-9, -2, 3, 7],
+        [-4, 0, 5, 8],
+        [-7, -2, 4, 9],
+        [-9, -2, 3, 12],
+      ];
+      chords.forEach((chord, ci) => {
+        chord.forEach((s, i) => {
+          note(f(s - 12), ci * 3 + i * 0.28, 2.6, 0.24, "sine");
+          note(f(s), ci * 3 + i * 0.28, 2.6, 0.18, "triangle");
+        });
+      });
+    }
+
+    setPlaying(kind);
+    const timer = window.setTimeout(() => {
+      setPlaying(null);
+      musicStopRef.current = null;
+    }, DUR * 1000);
+
+    musicStopRef.current = () => {
+      window.clearTimeout(timer);
+      nodes.forEach((n) => {
+        try {
+          n.stop();
+        } catch {
+          /* already stopped */
+        }
+      });
+      master.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+    };
+  };
+
   const controlsContent = (
     <>
       <div className="space-y-4">
         <SliderRow
           label="Altura do teto"
           value={`${height.toFixed(1)} m`}
-          min={6}
+          min={11}
           max={25}
           step={0.5}
           v={height}
@@ -225,11 +352,52 @@ function Index() {
           ) : (
             <Play className="h-4 w-4 text-brass-bright" />
           )}
-          {toneOn ? "Parar tom contínuo" : "Tocar tom contínuo (Ré³)"}
+          {toneOn ? "Parar tom contínuo" : "Tocar tom contínuo"}
+        </button>
+
+        <div className="pt-2 font-mono text-[9px] uppercase tracking-[0.15em] text-parchment-dim">
+          Trechos de 12 s
+        </div>
+        <button
+          onClick={() =>
+            playing === "jazz" ? stopMusic() : playPiece("jazz")
+          }
+          className="flex w-full items-start gap-2.5 rounded-sm border border-walnut bg-[linear-gradient(180deg,var(--walnut),var(--walnut-dark))] px-4 py-3 text-left text-sm font-semibold tracking-wide text-parchment transition hover:-translate-y-0.5"
+        >
+          {playing === "jazz" ? (
+            <Square className="mt-0.5 h-4 w-4 shrink-0 text-brass-bright" />
+          ) : (
+            <Music2 className="mt-0.5 h-4 w-4 shrink-0 text-brass-bright" />
+          )}
+          <span>
+            {playing === "jazz" ? "Parar" : "Jazz de pequeno grupo"}
+            <span className="mt-0.5 block font-mono text-[9px] font-normal uppercase tracking-wider text-parchment-dim">
+              valoriza o teto baixo
+            </span>
+          </span>
+        </button>
+        <button
+          onClick={() =>
+            playing === "classical" ? stopMusic() : playPiece("classical")
+          }
+          className="flex w-full items-start gap-2.5 rounded-sm border border-walnut bg-[linear-gradient(180deg,var(--walnut),var(--walnut-dark))] px-4 py-3 text-left text-sm font-semibold tracking-wide text-parchment transition hover:-translate-y-0.5"
+        >
+          {playing === "classical" ? (
+            <Square className="mt-0.5 h-4 w-4 shrink-0 text-brass-bright" />
+          ) : (
+            <Piano className="mt-0.5 h-4 w-4 shrink-0 text-brass-bright" />
+          )}
+          <span>
+            {playing === "classical" ? "Parar" : "Piano · música clássica"}
+            <span className="mt-0.5 block font-mono text-[9px] font-normal uppercase tracking-wider text-parchment-dim">
+              valoriza o teto alto
+            </span>
+          </span>
         </button>
       </div>
     </>
   );
+
 
   return (
     <div className="relative h-[100svh] w-full overflow-hidden bg-void">

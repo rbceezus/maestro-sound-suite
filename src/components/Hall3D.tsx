@@ -306,8 +306,9 @@ function Scene({
 
   return (
     <>
-      <color attach="background" args={["#120c07"]} />
-      <fog attach="fog" args={["#120c07", 40, 110]} />
+      <color attach="background" args={["#2a1a10"]} />
+      <fog attach="fog" args={["#2a1a10", 45, 95]} />
+
       <ambientLight intensity={0.35} color="#ffd9a0" />
       <hemisphereLight intensity={0.35} color="#ffcf8f" groundColor="#3a2415" />
       <directionalLight
@@ -406,13 +407,19 @@ function Scene({
       </group>
 
       <OrbitControls
-        target={[6, 5, 0]}
-        enablePan
-        minDistance={12}
-        maxDistance={100}
-        maxPolarAngle={Math.PI / 1.9}
+        target={[8, 6, 0]}
+        enablePan={false}
+        minDistance={20}
+        maxDistance={40}
+        minPolarAngle={Math.PI / 3.4}
+        maxPolarAngle={Math.PI / 2.15}
+        minAzimuthAngle={-Math.PI / 3}
+        maxAzimuthAngle={Math.PI / 3}
+        enableDamping
+        dampingFactor={0.08}
         makeDefault
       />
+
     </>
   );
 }

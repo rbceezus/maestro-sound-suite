@@ -69,6 +69,13 @@ function Index() {
   const oscRef = useRef<OscillatorNode | null>(null);
   const oscGainRef = useRef<GainNode | null>(null);
   const musicStopRef = useRef<(() => void) | null>(null);
+  const busRef = useRef<{
+    master: GainNode;
+    dry: GainNode;
+    wet: GainNode;
+    conv: ConvolverNode;
+    rt: number;
+  } | null>(null);
 
 
   const ly = 1.6 + (lx - 9) * 0.09;

@@ -450,7 +450,7 @@ function Index() {
             <Music2 className="mt-0.5 h-4 w-4 shrink-0 text-brass-bright" />
           )}
           <span>
-            {playing === "jazz" ? "Parar" : "Jazz de pequeno grupo"}
+            {playing === "jazz" ? "Parar" : "Jazz"}
             <span className="mt-0.5 block font-mono text-[9px] font-normal uppercase tracking-wider text-parchment-dim">
               valoriza o teto baixo
             </span>
